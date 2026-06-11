@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Lab System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="admin.css">
+  <style>
+    .toast-alert {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      color: white;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .status-available { background: #dcfce7; color: #166534; }
+    .status-inuse { background: #fef3c7; color: #92400e; }
+    .status-maintenance { background: #fee2e2; color: #991b1b; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #dcfce7; color: #166534; }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6b7280;
+    }
+    
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 50%;
+      border-top-color: #3b82f6;
+      animation: spin 0.6s linear infinite;
+      margin-left: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .card {
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <header class="mobile-header">
+    <button class="menu-toggle" id="menuToggle">☰</button>
+    <h2>Admin Panel</h2>
+  </header>
+  
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h2><i class="fas fa-tachometer-alt"></i> Admin Panel</h2>
+    </div>
+    <div class="sidebar-menu">
+      <a href="#dashboard" class="nav-link active"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="#users" class="nav-link"><i class="fas fa-users"></i> Users</a>
+      <a href="#supervisors" class="nav-link"><i class="fas fa-user-tie"></i> Lab Supervisors</a>
+      <a href="#equipment" class="nav-link"><i class="fas fa-microscope"></i> Equipment</a>
+      <a href="#reports" class="nav-link"><i class="fas fa-file-alt"></i> Reports</a>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" id="logoutBtn">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <section id="dashboard" class="content-section active-section">
+      <h2><i class="fas fa-chart-simple"></i> Dashboard Overview</h2>
+      <div class="cards" id="statsContainer">
+        <div class="card"><h3>Total Users</h3><p id="totalUsers">--</p></div>
+        <div class="card"><h3>Pending Approvals</h3><p id="pendingApprovals">--</p></div>
+        <div class="card"><h3>Total Equipment</h3><p id="totalEquipment">--</p></div>
+        <div class="card"><h3>Active Bookings</h3><p id="activeBookings">--</p></div>
+      </div>
+    </section>
+
+    <section id="users" class="content-section">
+      <div class="section-header">
+        <h2><i class="fas fa-user-friends"></i> Users Management</h2>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="5" class="loading">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="supervisors" class="content-section">
+      <div class="section-header">
+        <h2><i class="fas fa-chalkboard-user"></i> Lab Supervisors</h2>
+        <button class="btn btn-approve" id="addSupervisorBtn"><i class="fas fa-plus"></i> Add Supervisor</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Department</th>
+              <th>Assigned Lab</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="supervisorsTableBody">
+            <tr><td colspan="5" class="loading">Loading supervisors...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="equipment" class="content-section">
+      <div class="section-header">
+        <h2><i class="fas fa-microscope"></i> Equipment Management</h2>
+        <button class="btn btn-approve" id="addEquipmentBtn"><i class="fas fa-plus"></i> Add Equipment</button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Location</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="equipmentTableBody">
+            <tr><td colspan="5" class="loading">Loading equipment...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="reports" class="content-section">
+      <h2><i class="fas fa-chart-bar"></i> Reports</h2>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Report ID</th>
+              <th>Type</th>
+              <th>Generated On</th>
+              <th>Download</th>
+            </tr>
+          </thead>
+          <tbody id="reportsTableBody">
+            <tr><td colspan="4" class="loading">Loading reports...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
